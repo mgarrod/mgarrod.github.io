@@ -21,10 +21,6 @@
         width: 100%;
       }
 
-      #infoDiv {
-        padding: 10px;
-        width: 300px;
-      }
     </style>
 
     <script>
@@ -83,7 +79,7 @@
           ]
         };
         
-        const layer = new ImageryTileLayer({
+        const layer1 = new ImageryTileLayer({
           url: "https://wyominglightpollution.s3.amazonaws.com/forest_20231219.tif",
           bandIds: [1],
           interpolation: "bilinear",
@@ -93,7 +89,7 @@
 
         const map = new Map({
           basemap: "hybrid",
-          layers: [layer]
+          layers: [layer1]
         });
 
         const view = new MapView({
@@ -116,7 +112,7 @@
 
         // create a new Swipe widget
         const swipe = new Swipe({
-          leadingLayers: [layer],
+          leadingLayers: [layer1],
           //trailingLayers: [layer],
           position: 75,
           view: view
@@ -125,8 +121,8 @@
         // add the widget to the view
         view.ui.add(swipe);
 
-        view.whenLayerView(layer).then(() => {
-          view.goTo(layer.fullExtent.expand(1.5));
+        view.whenLayerView(layer1).then(() => {
+          view.goTo(layer1.fullExtent.expand(1.5));
         });
 
       
