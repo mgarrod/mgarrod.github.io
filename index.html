@@ -25,9 +25,6 @@
         width: 270px;
         padding: 15px;
         font-size: 14px;
-        position: absolute;
-        bottom: 30px;
-        left: 17px;
       }
 
       .slider {
@@ -163,6 +160,8 @@
 
         // add the widget to the view
         view.ui.add(swipe);
+        
+        view.ui.add([paneDiv], "bottom-left");
 
         view.whenLayerView(layer1).then(() => {
           view.goTo(layer1.fullExtent.expand(1.5));
