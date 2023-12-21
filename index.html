@@ -20,6 +20,18 @@
         height: 100%;
         width: 100%;
       }
+      
+      #paneDiv {
+        width: 270px;
+        padding: 15px;
+        font-size: 14px;
+      }
+
+      .slider {
+        margin: 20px 0;
+        height: 40px;
+        width: 95%;
+      }
 
     </style>
 
@@ -32,13 +44,14 @@
         "esri/renderers/ClassBreaksRenderer",
         "esri/widgets/LayerList",
         "esri/widgets/Swipe",
-        "esri/widgets/Expand"
+        "esri/widgets/Expand",
+        "esri/widgets/Slider"
       ], (
         Map,
         MapView,
         ImageryTileLayer,
         Graphic,
-        ClassBreaksRenderer, LayerList, Swipe, Expand
+        ClassBreaksRenderer, LayerList, Swipe, Expand, Slider
       ) => {
         
 
@@ -94,10 +107,29 @@
           renderer: renderer,
           opacity: 0.75
         });
+        const layers = [layer1,layer2];
+        
+        const opacitySlider = new Slider({
+          container: "opacity-slider",
+          min: 0,
+          max: 100,
+          values: [ 75 ],
+          steps: 1,
+          snapOnClickEnabled: false,
+          visibleElements: {
+            labels: true,
+            rangeLabels: true
+          }
+        });
+        opacitySlider.on(["thumb-change", "thumb-drag"], function(evt) {
+          for (let i=0;i < layers.length; i++) {
+            layers[i].opacity = evt.value / 100;
+          }
+        });
 
         const map = new Map({
           basemap: "hybrid",
-          layers: [layer1, layer2]
+          layers: layers
         });
 
         const view = new MapView({
@@ -116,11 +148,11 @@
           content: layerList,
           expanded: false
         });
-        view.ui.add(llExpand, "top-right");
+        view.ui.add(llExpand, "top-left");
 
         // create a new Swipe widget
         const swipe = new Swipe({
-          leadingLayers: [layer1,layer2],
+          leadingLayers: layers,
           //trailingLayers: [layer],
           position: 75,
           view: view
@@ -140,6 +172,9 @@
 
   <body>
     <div id="viewDiv"></div>
-    
+    <div id="paneDiv" class="esri-widget">
+      <div>Opacity</div>
+      <div id="opacity-slider" class="slider"></div>
+    </div>
   </body>
 </html>
