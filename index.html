@@ -7,9 +7,10 @@
     />
     <title>Light Pollution Test</title>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css" />
     <script src="https://js.arcgis.com/4.28/"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://mgarrod.github.io/jquery.csv.min.js"></script>
 
     <style>
       html,
@@ -91,92 +92,99 @@
           ]
         };
         
-        const layer2 = new ImageryTileLayer({
-          url: "https://wyominglightpollution.s3.amazonaws.com/forest_20231219.tif",
-          bandIds: [1],
-          interpolation: "bilinear",
-          renderer: renderer,
-          opacity: 0.75,
-          visible: false,
-          title: "Sector 1: 12/19/2023 19:00"
-        });
-        const layer1 = new ImageryTileLayer({
-          url: "https://wyominglightpollution.s3.amazonaws.com/forest_20231220.tif",
-          bandIds: [1],
-          interpolation: "bilinear",
-          renderer: renderer,
-          opacity: 0.75,
-          title: "Sector 1: 12/20/2023 19:00"
-        });
-        // add layer here
-        const layers = [layer1,layer2];
-        
-      
-        const opacitySlider = new Slider({
-          container: "opacity-slider",
-          min: 0,
-          max: 100,
-          values: [ 75 ],
-          steps: 1,
-          snapOnClickEnabled: false,
-          visibleElements: {
-            labels: true,
-            rangeLabels: true
+        $.ajax({
+          type: "GET",
+          url: "https://wyominglightpollution.s3.amazonaws.com/tiflist.txt",
+          dataType: "text",
+          success: function(data) {
+          
+          	data = $.csv.toArrays(data)
+          	
+          	let layers = [];
+          	for (let x=0;x < data.length;x++) {
+          	  
+          	  let alayer = data[x];
+          	  
+          	  let layer = new ImageryTileLayer({
+                url: "https://wyominglightpollution.s3.amazonaws.com/" + alayer[0],
+                bandIds: [1],
+                interpolation: "bilinear",
+                renderer: renderer,
+                opacity: 0.75,
+                title: alayer[1]
+              });
+              layers.push(layer);
+              
+          	}
+    
+            const map = new Map({
+              basemap: "hybrid",
+              layers: layers
+            });
+    
+            const view = new MapView({
+              container: "viewDiv",
+              map: map,
+              zoom: 14,
+              center: [-84.47317340969197, 39.236832007772286]
+            });
+            
+            view.when().then(() => {
+              var promiseLayers = [];
+              for (let i=0;i < layers.length; i++) {
+                promiseLayers.push(view.whenLayerView(layers[i]));
+              }
+              Promise.all(promiseLayers).then((newlayers) => {
+                let extent = undefined;
+                for (let i=0;i < newlayers.length; i++) {
+                  extent = extent == undefined ? newlayers[i].fullExtent : extent.union(newlayers[i].fullExtent);
+                }
+                view.goTo(extent.expand(1.5));
+              });
+            });
+            
+            const layerList = new LayerList({
+              view: view
+            });
+            const llExpand = new Expand({
+              view: view,
+              content: layerList,
+              expanded: false
+            });
+            view.ui.add(llExpand, "top-left");
+            
+            const opacitySlider = new Slider({
+              container: "opacity-slider",
+              min: 0,
+              max: 100,
+              values: [ 75 ],
+              steps: 1,
+              snapOnClickEnabled: false,
+              visibleElements: {
+                labels: true,
+                rangeLabels: true
+              }
+            });
+            opacitySlider.on(["thumb-change", "thumb-drag"], function(evt) {
+              for (let i=0;i < layers.length; i++) {
+                layers[i].opacity = evt.value / 100;
+              }
+            });
+    
+            const swipe = new Swipe({
+              leadingLayers: layers,
+              //trailingLayers: [layer],
+              position: 75,
+              view: view
+            });
+    
+            view.ui.add(swipe);
+            
+            view.ui.add([paneDiv], "bottom-left");
+          
           }
         });
-        opacitySlider.on(["thumb-change", "thumb-drag"], function(evt) {
-          for (let i=0;i < layers.length; i++) {
-            layers[i].opacity = evt.value / 100;
-          }
-        });
-
-        const map = new Map({
-          basemap: "hybrid",
-          layers: layers
-        });
-
-        const view = new MapView({
-          container: "viewDiv",
-          map: map,
-          zoom: 14,
-          center: [-84.47317340969197, 39.236832007772286]
-        });
         
-        view.when().then(() => {
-          var promiseLayers = [];
-          for (let i=0;i < layers.length; i++) {
-            promiseLayers.push(view.whenLayerView(layers[i]));
-          }
-          Promise.all(promiseLayers).then((newlayers) => {
-            let extent = undefined;
-            for (let i=0;i < newlayers.length; i++) {
-              extent = extent == undefined ? newlayers[i].fullExtent : extent.union(newlayers[i].fullExtent);
-            }
-            view.goTo(extent.expand(1.5));
-          });
-        });
-        
-        const layerList = new LayerList({
-          view: view
-        });
-        const llExpand = new Expand({
-          view: view,
-          content: layerList,
-          expanded: false
-        });
-        view.ui.add(llExpand, "top-left");
-
-        const swipe = new Swipe({
-          leadingLayers: layers,
-          //trailingLayers: [layer],
-          position: 75,
-          view: view
-        });
-
-        view.ui.add(swipe);
-        
-        view.ui.add([paneDiv], "bottom-left");
-
       });
     </script>
   </head>
