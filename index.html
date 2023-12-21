@@ -79,8 +79,16 @@
           ]
         };
         
-        const layer1 = new ImageryTileLayer({
+        const layer2 = new ImageryTileLayer({
           url: "https://wyominglightpollution.s3.amazonaws.com/forest_20231219.tif",
+          bandIds: [1],
+          interpolation: "bilinear",
+          renderer: renderer,
+          opacity: 0.75,
+          visible: false
+        });
+        const layer1 = new ImageryTileLayer({
+          url: "https://wyominglightpollution.s3.amazonaws.com/forest_20231220.tif",
           bandIds: [1],
           interpolation: "bilinear",
           renderer: renderer,
@@ -89,7 +97,7 @@
 
         const map = new Map({
           basemap: "hybrid",
-          layers: [layer1]
+          layers: [layer1, layer2]
         });
 
         const view = new MapView({
@@ -112,7 +120,7 @@
 
         // create a new Swipe widget
         const swipe = new Swipe({
-          leadingLayers: [layer1],
+          leadingLayers: [layer1,layer2],
           //trailingLayers: [layer],
           position: 75,
           view: view
