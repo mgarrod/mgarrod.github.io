@@ -97,14 +97,16 @@
           interpolation: "bilinear",
           renderer: renderer,
           opacity: 0.75,
-          visible: false
+          visible: false,
+          title: "Sector 1: 12/19/2023 19:00"
         });
         const layer1 = new ImageryTileLayer({
           url: "https://wyominglightpollution.s3.amazonaws.com/forest_20231220.tif",
           bandIds: [1],
           interpolation: "bilinear",
           renderer: renderer,
-          opacity: 0.75
+          opacity: 0.75,
+          title: "Sector 1: 12/20/2023 19:00"
         });
         // add layer here
         const layers = [layer1,layer2];
